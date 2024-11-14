@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "calvin"
+version = "0.1.0"
+description = ""
+authors = ["Allie Fitter <fitterj@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "calvin" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pillow = "^11.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
