@@ -1,9 +1,13 @@
 from importlib.resources import files
+from pathlib import Path
 from tkinter import Label, Tk
 
-from PIL import ImageTk, Image
+from PIL import ImageTk
+from PIL.Image import open, Image
 
 from calvin.db import DB
+
+DATA = files("calvin.data")
 
 
 class ComicViewer:
@@ -13,34 +17,43 @@ class ComicViewer:
         self.root.config(cursor="none")
         self.root.attributes("-fullscreen", True)
         self.db = DB()
-        img = ImageTk.PhotoImage(self._scale_image(self.db.get_next_comic()))
-        self.panel = Label(self.root, image=img, bg='#949494')
+        img = ImageTk.PhotoImage(
+            self._set_background(self._scale_image(self.db.get_todays_comic()))
+        )
+        self.panel = Label(self.root, image=img, bg="#949494")
         self.panel.pack(side="bottom", fill="both", expand="yes")
         self.root.update()
-    
-    def next_comic(self):
+
+    def next_daily_comic(self):
         print("next image")
-        comic = self.db.get_next_comic()
-        img = ImageTk.PhotoImage(self._scale_image(comic))
+        comic = self.db.get_next_daily_comic()
+        img = ImageTk.PhotoImage(self._set_background(self._scale_image(comic)))
         self.panel.pack_forget()
-        self.panel = Label(self.root, image=img, bg='#949494')
+        self.panel = Label(self.root, image=img, bg="#949494")
         self.panel.pack(side="bottom", fill="both", expand="yes")
         self.root.update()
 
     def get_current_comic(self):
         comic = self.db.get_current_comic()
-        img = ImageTk.PhotoImage(self._scale_image(comic))
-        self.panel.pack_forget()
-        self.panel = Label(self.root, image=img, bg='#949494')
-        self.panel.pack(side="bottom", fill="both", expand="yes")
-        self.root.update()
+        self._set_next_image(comic)
+
+    def next_comic(self):
+        comic = self.db.get_next_comic()
+        self._set_next_image(comic)
+
+    def previous_comic(self):
+        comic = self.db.get_previous_comic()
+        self._set_next_image(comic)
 
     def get_comic(self, comic: str):
-        img = ImageTk.PhotoImage(self._scale_image(Image.open(str(self.comics.joinpath(f"{comic}.jpg")))))
-        self.panel.pack_forget()
-        self.panel = Label(self.root, image=img, bg='#949494')
-        self.panel.pack(side="bottom", fill="both", expand="yes")
-        self.root.update()
+        path = Path(str(self.comics.joinpath(f"{comic}.jpg")))
+        if path.exists():
+            self._set_next_image(open(path))
+
+    def start_arc(self, arc_name: str):
+        start_comic = self.db.get_arc_start(arc_name)
+        if start_comic:
+            self._set_next_image(start_comic)
 
     @classmethod
     def _scale_image(cls, image: Image):
@@ -50,3 +63,19 @@ class ComicViewer:
             width = int(width * (540 / height))
             height = 540
         return image.resize((width, height))
+
+    @classmethod
+    def _set_background(cls, comic: Image) -> Image:
+        x = int((1024 - comic.width) / 2)
+        y = int((600 - comic.height) / 2)
+        background = open(str(DATA.joinpath("textured_grey.jpg")))
+        background.paste(comic, (x, y))
+
+        return background
+
+    def _set_next_image(self, comic: Image):
+        image = ImageTk.PhotoImage(self._set_background(self._scale_image(comic)))
+        self.panel.pack_forget()
+        self.panel = Label(self.root, image=image, bg="#949494")
+        self.panel.pack(side="bottom", fill="both", expand="yes")
+        self.root.update()

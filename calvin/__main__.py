@@ -1,8 +1,11 @@
+from datetime import datetime
+
 import click
-from paho.mqtt.client import Client
-from paho.mqtt.enums import CallbackAPIVersion
+import uvicorn
+from click import DateTime, STRING
 
 from calvin.db import DB
+from calvin.publisher import Publisher
 
 
 @click.group()
@@ -11,32 +14,52 @@ def cli():
 
 
 @cli.command()
+def next_daily_comic():
+    with Publisher() as publisher:
+        publisher.publish("next_daily_comic")
+
+
+@cli.command()
 def next_comic():
-    client = Client(CallbackAPIVersion.VERSION2)
-    client.connect("localhost", 1883, 60)
-    client.loop_start()
-    client.publish("next_comic")
-    client.loop_stop()
+    with Publisher() as publisher:
+        publisher.publish("next_comic")
+
+
+@cli.command()
+def previous_comic():
+    with Publisher() as publisher:
+        publisher.publish("previous_comic")
 
 
 @cli.command()
 def current_comic():
-    client = Client(CallbackAPIVersion.VERSION2)
-    client.connect("localhost", 1883, 60)
-    client.loop_start()
-    client.publish("current_comic")
-    client.loop_stop()
+    with Publisher() as publisher:
+        publisher.publish("current_comic")
 
 
 @cli.command()
-@click.argument("comic_date")
-def comic(comic_date: str):
-    print(comic_date)
-    client = Client(CallbackAPIVersion.VERSION2)
-    client.connect("localhost", 1883, 60)
-    client.loop_start()
-    client.publish("comic", comic_date)
-    client.loop_stop()
+@click.argument("comic_date", type=DateTime(["%Y-%m-%d"]))
+def comic(comic_date: datetime):
+    with Publisher() as publisher:
+        publisher.publish("comic", comic_date.strftime("%Y%d%m"))
+
+
+@cli.command()
+@click.argument("arc_name", type=STRING)
+def start_arc(arc_name: str):
+    with Publisher() as publisher:
+        publisher.publish("start_arc", arc_name)
+
+
+@cli.command()
+def list_arcs():
+    arcs = DB().list_arcs()
+    arc_list = []
+    for arc in arcs:
+        arc_list.append(
+            f"{arc['name']}: {datetime.strptime(arc['filename'], '%Y%m%d.jpg').strftime('%Y-%m-%d')}"
+        )
+    print("\n".join(arc_list))
 
 
 @cli.command()
@@ -49,5 +72,10 @@ def list_comics():
     list_()
 
 
-if __name__ == '__main__':
+@cli.command()
+def run_server():
+    uvicorn.run("calvin.api:app", host="0.0.0.0", port=8000, reload=False)
+
+
+if __name__ == "__main__":
     cli()

@@ -4,8 +4,10 @@ from os import listdir
 from os.path import isfile, join
 from pathlib import Path
 from sqlite3 import Connection
+from typing import Optional
 
-from PIL import Image
+import yaml
+from PIL.Image import open as image_open, Image
 
 
 class DB:
@@ -13,6 +15,7 @@ class DB:
         self.calvin = files("calvin")
         self.comics = self.calvin.joinpath("comics")
         self.db_path = Path(str(self.calvin.joinpath("comics.db")))
+        self.arcs = self.calvin.joinpath("data/arcs.yaml")
 
     @property
     def connection(self) -> Connection:
@@ -21,43 +24,120 @@ class DB:
     def init(self):
         if self.db_path.exists():
             self.db_path.unlink()
+        with open(str(self.arcs), "r") as f:
+            arcs: dict[str, int] = yaml.safe_load(f)
 
         cursor = self.connection.cursor()
         cursor.execute("create table comics (id integer primary key, filename string)")
-        cursor.execute("create table position (id integer primary key, position integer)")
-        comics = sorted([f for f in listdir('calvin/comics') if isfile(join('calvin/comics', f)) and f.endswith(".jpg")])
-        cursor.executemany("insert into comics (filename) values (?)", [(c,) for c in comics])
-        cursor.execute("insert into position (position) values (0)")
+        cursor.execute("create table arcs (name string, filename string)")
+        cursor.execute("create table position (cursor_name string, position integer)")
+        comics = sorted(
+            [
+                Path(str(f)).name
+                for f in self.comics.iterdir()
+                if f.is_file() and str(f).endswith(".jpg")
+            ]
+        )
+        cursor.executemany(
+            "insert into comics (filename) values (?)", [(c,) for c in comics]
+        )
+        cursor.executemany(
+            "insert into arcs (name, filename) values (?, ?)",
+            [(k, f"{str(v)}.jpg") for k, v in arcs.items()],
+        )
+        cursor.execute(
+            "insert into position (cursor_name, position) values ('daily', 1)"
+        )
+        cursor.execute(
+            "insert into position (cursor_name, position) values ('current', 1)"
+        )
         cursor.connection.commit()
         cursor.connection.cursor()
 
     def list_(self):
         cursor = self.connection.cursor()
-        print(cursor.execute("select * from comics").fetchall())
+        rows = cursor.execute("select filename from comics").fetchall()
 
-    def get_next_comic(self) -> Image:
-        cursor = self.connection.cursor()
-        result = cursor.execute("select position from position where id = 1")
-        position, = result.fetchone()
-        position += 1
-        result = cursor.execute(f"select filename from comics where id = {position}")
-        filename, = result.fetchone()
-        cursor.execute(f"update position set position = {position}")
-        cursor.connection.commit()
-        cursor.connection.close()
-        return Image.open(str(self.comics.joinpath(filename)))
+        return [r[0] for r in rows]
+
+    def get_todays_comic(self) -> Image:
+        return self._get_comic_for_cursor("daily")
+
+    def get_next_daily_comic(self) -> Image:
+        return self._increment_comic_for_cursor("daily")
 
     def get_current_comic(self) -> Image:
-        cursor = self.connection.cursor()
-        result = cursor.execute("select position from position where id = 1")
-        position, = result.fetchone()
-        result = cursor.execute(f"select filename from comics where id = {position}")
-        filename, = result.fetchone()
-        cursor.connection.close()
-        return Image.open(str(self.comics.joinpath(filename)))
+        return self._get_comic_for_cursor("current")
 
-    def reset_position(self):
+    def get_next_comic(self) -> Image:
+        return self._increment_comic_for_cursor("current")
+
+    def get_previous_comic(self) -> Image:
+        return self._increment_comic_for_cursor("current", True)
+
+    def get_arc_start(self, arc_name: str) -> Image | None:
+        cursor = self.connection.cursor()
+        result = cursor.execute(f"select filename from arcs where name = '{arc_name}'")
+        row = result.fetchone()
+        if row:
+            (filename,) = row
+            result = cursor.execute(
+                f"select id from comics where filename = '{filename}'"
+            )
+            (position,) = result.fetchone()
+            cursor.execute(
+                f"update position set position = {position} where cursor_name = 'current'"
+            )
+            cursor.connection.commit()
+            cursor.connection.close()
+            return image_open(str(self.comics.joinpath(filename)))
+
+        cursor.connection.close()
+        return None
+
+    def list_arcs(self) -> list[dict[str, str]]:
+        cursor = self.connection.cursor()
+        result = cursor.execute(f"select name, filename from arcs")
+        rows = result.fetchall()
+        cursor.connection.close()
+
+        return [{"name": row[0], "filename": row[1]} for row in rows]
+
+    def _get_comic_for_cursor(self, cursor_name: str) -> Image:
+        cursor = self.connection.cursor()
+        result = cursor.execute(
+            f"select position from position where cursor_name = '{cursor_name}'"
+        )
+        (position,) = result.fetchone()
+        result = cursor.execute(f"select filename from comics where id = {position}")
+        (filename,) = result.fetchone()
+        cursor.connection.close()
+        return image_open(str(self.comics.joinpath(filename)))
+
+    def _increment_comic_for_cursor(
+        self, cursor_name: str, decrement: bool = False
+    ) -> Image:
+        cursor = self.connection.cursor()
+        result = cursor.execute(
+            f"select position from position where cursor_name = '{cursor_name}'"
+        )
+        (position,) = result.fetchone()
+        position = position - 1 if decrement else position + 1
+        result = cursor.execute(f"select filename from comics where id = {position}")
+        (filename,) = result.fetchone()
+        cursor.execute(
+            f"update position set position = {position} where cursor_name = '{cursor_name}'"
+        )
+        cursor.connection.commit()
+        cursor.connection.close()
+        return image_open(str(self.comics.joinpath(filename)))
+
+    def reset_daily(self):
         cursor = self.connection
-        cursor.execute('update position set position = 0')
+        cursor.execute("update position set position = 0 where cursor_name = 'daily'")
         cursor.commit()
         self.connection.close()
+
+
+def get_db() -> DB:
+    return DB()

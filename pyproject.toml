@@ -5,10 +5,20 @@ description = ""
 authors = ["Allie Fitter <fitterj@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "calvin" }]
+include = [
+    { path = "calvin/data", format = ["sdist", "wheel"] }
+]
+
+[tool.poetry.scripts]
+calvin = "calvin.__main__:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 pillow = "^11.0.0"
+click = "^8.1.7"
+paho-mqtt = "^2.1.0"
+pyyaml = "^6.0.2"
+python-dateutil = "^2.9.0.post0"
 
 
 [build-system]
