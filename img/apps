@@ -10,3 +10,4 @@ openbox
 python3-tk
 vim
 mosquitto
+xserver-xorg-core
