@@ -1,4 +1,5 @@
 from functools import partial
+from time import sleep
 from tkinter import TclError
 from typing import Any
 
@@ -50,6 +51,7 @@ def main():
             viewer = ComicViewer()
         except TclError as e:
             print(e)
+            sleep(2)
 
     client = Client(CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
