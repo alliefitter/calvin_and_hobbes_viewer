@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 from importlib.resources import files
 from pathlib import Path
 from tkinter import Label, Tk
@@ -6,13 +8,14 @@ from PIL import ImageTk
 from PIL.Image import open, Image
 
 from calvin.db import DB
+from calvin.util import get_comics_path
 
 DATA = files("calvin.data")
 
 
 class ComicViewer:
     def __init__(self):
-        self.comics = files("calvin.comics")
+        self.comics = get_comics_path()
         self.root = Tk()
         self.root.config(cursor="none")
         self.root.attributes("-fullscreen", True)
@@ -24,14 +27,13 @@ class ComicViewer:
         self.panel.pack(side="bottom", fill="both", expand="yes")
         self.root.update()
 
+    def get_todays_comic(self):
+        comic = self.db.get_todays_comic()
+        self._set_next_image(comic)
+
     def next_daily_comic(self):
-        print("next image")
         comic = self.db.get_next_daily_comic()
-        img = ImageTk.PhotoImage(self._set_background(self._scale_image(comic)))
-        self.panel.pack_forget()
-        self.panel = Label(self.root, image=img, bg="#949494")
-        self.panel.pack(side="bottom", fill="both", expand="yes")
-        self.root.update()
+        self._set_next_image(comic)
 
     def get_current_comic(self):
         comic = self.db.get_current_comic()
@@ -45,9 +47,12 @@ class ComicViewer:
         comic = self.db.get_previous_comic()
         self._set_next_image(comic)
 
-    def get_comic(self, comic: str):
-        path = Path(str(self.comics.joinpath(f"{comic}.jpg")))
+    def get_comic(self, comic_date: str):
+        comic = datetime.strptime(comic_date, "%Y-%m-%d").strftime("%Y%m%d")
+        filename = f"{comic}.jpg"
+        path = self.comics.joinpath(filename)
         if path.exists():
+            self.db.set_cursor_to_comic(filename, "current")
             self._set_next_image(open(path))
 
     def start_arc(self, arc_name: str):

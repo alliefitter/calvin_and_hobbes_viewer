@@ -1,4 +1,5 @@
 from functools import partial
+from tkinter import TclError
 from typing import Any
 
 from paho.mqtt.client import Client, MQTTMessage
@@ -10,6 +11,7 @@ from calvin.comic_viewer import ComicViewer
 def on_connect(client: Client, *args):
     client.subscribe("comic")
     client.subscribe("next_daily_comic")
+    client.subscribe("todays_comic")
     client.subscribe("current_comic")
     client.subscribe("start_arc")
     client.subscribe("next_comic")
@@ -21,6 +23,9 @@ def on_message(viewer: ComicViewer, client: Client, userdata: Any, msg: MQTTMess
     match msg.topic:
         case "next_daily_comic":
             viewer.next_daily_comic()
+
+        case "todays_comic":
+            viewer.get_todays_comic()
 
         case "next_comic":
             viewer.next_comic()
@@ -39,7 +44,13 @@ def on_message(viewer: ComicViewer, client: Client, userdata: Any, msg: MQTTMess
 
 
 def main():
-    viewer = ComicViewer()
+    viewer = None
+    while viewer is None:
+        try:
+            viewer = ComicViewer()
+        except TclError as e:
+            print(e)
+
     client = Client(CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
     client.on_message = partial(on_message, viewer)

@@ -1,0 +1,10 @@
+[Unit]
+Description=Display next daily comic
+
+[Service]
+Environment="COMICS_PATH=/app/calvin/comics"
+User=calvin
+Group=calvin
+ExecStart=/app/calvin/venv/bin/calvin next-daily-comic
+Restart=on-failure
+RestartSec=10

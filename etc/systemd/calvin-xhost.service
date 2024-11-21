@@ -1,0 +1,14 @@
+[Unit]
+Description=Allow calvin user access to xserver
+
+[Service]
+Type=oneshot
+Environment="DISPLAY=:0"
+User=afitter
+Group=afitter
+ExecStart=/home/afitter/projects/calvin_and_hobbes_viewer/scripts/xhost_calvin.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=calvin-xhost.target

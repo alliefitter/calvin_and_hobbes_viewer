@@ -1,0 +1,14 @@
+[Unit]
+Description=Calvin API
+After=calvin-daemon.service
+
+[Service]
+Environment="COMICS_PATH=/app/calvin/comics"
+User=calvin
+Group=calvin
+ExecStart=/app/calvin/venv/bin/calvin run-server
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical.target

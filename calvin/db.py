@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from importlib.resources import files
 from os import listdir
 from os.path import isfile, join
@@ -9,11 +10,13 @@ from typing import Optional
 import yaml
 from PIL.Image import open as image_open, Image
 
+from calvin.util import get_comics_path
+
 
 class DB:
     def __init__(self):
         self.calvin = files("calvin")
-        self.comics = self.calvin.joinpath("comics")
+        self.comics = get_comics_path()
         self.db_path = Path(str(self.calvin.joinpath("comics.db")))
         self.arcs = self.calvin.joinpath("data/arcs.yaml")
 
@@ -101,7 +104,23 @@ class DB:
         rows = result.fetchall()
         cursor.connection.close()
 
-        return [{"name": row[0], "filename": row[1]} for row in rows]
+        return [
+            {
+                "name": row[0],
+                "date": datetime.strptime(row[1], "%Y%m%d.jpg").strftime("%Y-%m-%d"),
+            }
+            for row in rows
+        ]
+
+    def set_cursor_to_comic(self, filename: str, cursor_name: str):
+        cursor = self.connection.cursor()
+        result = cursor.execute(f"select id from comics where filename = '{filename}'")
+        (position,) = result.fetchone()
+        cursor.execute(
+            f"update position set position = {position} where cursor_name = '{cursor_name}'"
+        )
+        cursor.connection.commit()
+        cursor.connection.close()
 
     def _get_comic_for_cursor(self, cursor_name: str) -> Image:
         cursor = self.connection.cursor()
@@ -118,11 +137,18 @@ class DB:
         self, cursor_name: str, decrement: bool = False
     ) -> Image:
         cursor = self.connection.cursor()
+        result = cursor.execute("select max(id) from comics")
+        (max_id,) = result.fetchone()
         result = cursor.execute(
             f"select position from position where cursor_name = '{cursor_name}'"
         )
         (position,) = result.fetchone()
         position = position - 1 if decrement else position + 1
+        if position < 1:
+            position = max_id
+        elif position > max_id:
+            position = 1
+
         result = cursor.execute(f"select filename from comics where id = {position}")
         (filename,) = result.fetchone()
         cursor.execute(

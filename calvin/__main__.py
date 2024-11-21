@@ -1,59 +1,49 @@
 from datetime import datetime
+from calvin import daemon
 
-import click
+import httpx
 import uvicorn
-from click import DateTime, STRING
+from typer import Typer
 
 from calvin.db import DB
-from calvin.publisher import Publisher
+
+app = Typer()
 
 
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@app.command()
 def next_daily_comic():
-    with Publisher() as publisher:
-        publisher.publish("next_daily_comic")
+    httpx.post("http://localhost:8000/api/comics/nextDaily")
 
 
-@cli.command()
+@app.command()
 def next_comic():
-    with Publisher() as publisher:
-        publisher.publish("next_comic")
+    httpx.post("http://localhost:8000/api/comics/next")
 
 
-@cli.command()
+@app.command()
 def previous_comic():
-    with Publisher() as publisher:
-        publisher.publish("previous_comic")
+    httpx.post("http://localhost:8000/api/comics/previous")
 
 
-@cli.command()
+@app.command()
 def current_comic():
-    with Publisher() as publisher:
-        publisher.publish("current_comic")
+    httpx.post("http://localhost:8000/api/comics/current")
 
 
-@cli.command()
-@click.argument("comic_date", type=DateTime(["%Y-%m-%d"]))
-def comic(comic_date: datetime):
-    with Publisher() as publisher:
-        publisher.publish("comic", comic_date.strftime("%Y%d%m"))
+@app.command()
+def get_comic(comic_date: datetime):
+    httpx.post(f"http://localhost:8000/api/comics/{comic_date.strftime('%Y%m%d')}")
 
 
-@cli.command()
-@click.argument("arc_name", type=STRING)
+@app.command()
 def start_arc(arc_name: str):
-    with Publisher() as publisher:
-        publisher.publish("start_arc", arc_name)
+    httpx.post(f"http://localhost:8000/api/comics/arcs/{arc_name}")
 
 
-@cli.command()
+@app.command()
 def list_arcs():
-    arcs = DB().list_arcs()
+    response = httpx.post("http://localhost:8000/api/comics/arcs")
+    arcs = response.json()
     arc_list = []
     for arc in arcs:
         arc_list.append(
@@ -62,20 +52,27 @@ def list_arcs():
     print("\n".join(arc_list))
 
 
-@cli.command()
+@app.command()
 def init_db():
     DB().init()
 
 
-@cli.command()
+@app.command()
 def list_comics():
-    list_()
+    response = httpx.post("http://localhost:8000/api/comics")
+    for comic in response.json():
+        print(comic)
 
 
-@cli.command()
+@app.command()
 def run_server():
     uvicorn.run("calvin.api:app", host="0.0.0.0", port=8000, reload=False)
 
 
+@app.command()
+def run_daemon():
+    daemon.main()
+
+
 if __name__ == "__main__":
-    cli()
+    app()

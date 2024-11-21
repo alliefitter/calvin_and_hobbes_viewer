@@ -1,0 +1,8 @@
+[Unit]
+Description=Timer to start calvin-daemon.service after desktop has loaded
+
+[Timer]
+OnCalendar=*-*-* 00:00:00
+
+[Install]
+WantedBy=timers.target
