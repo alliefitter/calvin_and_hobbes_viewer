@@ -49,9 +49,9 @@ systemctl enable calvin-daemon.service
 systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
 systemctl enable calvin-xhost.service
-(cat >> /etc/lightdm/lightdm.conf)
 raspi-config nonint do_boot_behaviour B4
 (cat | tee -a /etc/lightdm/lightdm.conf  >/dev/null) << EOF
+
 [SeatDefaults]
 user-session=openbox
 autologin-user=$SSH_USER
