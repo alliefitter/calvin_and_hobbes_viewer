@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
 export DISPLAY=:0
-/usr/bin/xhost + local:calvin
+xset -dpms
+xhost + local:calvin

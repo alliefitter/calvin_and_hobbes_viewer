@@ -164,3 +164,4 @@ calvin/comics/*
 calvin/comics.db
 img/*.img*
 img/wifi.nmconnection
+img/SSH_USER
