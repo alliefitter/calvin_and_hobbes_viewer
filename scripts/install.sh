@@ -9,7 +9,7 @@ sed -ie 's/CONF_SWAPSIZE=.*$/CONF_SWAPSIZE=2048/g' /etc/dphys-swapfile
 sudo dphys-swapfile setup
 sudo dphys-swapfile swapon
 apt update
-apt install git nodejs npm nginx libjpeg-dev zlib1g-dev python3-virtualenv lightdm openbox -y
+apt install git nodejs npm nginx libjpeg-dev zlib1g-dev python3-virtualenv lightdm openbox python3-tk -y
 git clone https://github.com/alliefitter/calvin_and_hobbes_viewer.git
 cd calvin_and_hobbes_viewer
 raspi-config nonint do_boot_behaviour B4
@@ -38,11 +38,10 @@ sed -ie 's/user .*$/user hobbes hobbes/g' /etc/nginx/nginx.conf
 rm /etc/nginx/sites-enabled/*
 chown -R calvin:calvin /app/calvin
 chown -R hobbes:hobbes /app/hobbes
-cp /tmp/calvin_and_hobbes/scripts/xhost_calvin.sh /usr/bin/xhost_calvin
+cp /tmp/calvin_and_hobbes/calvin_and_hobbes_viewer/scripts/xhost_calvin.sh /usr/bin/xhost_calvin
 systemctl daemon-reload
 systemctl enable calvin-api.service
 systemctl enable calvin-daemon.service
-systemctl enable calvin-daemon.timer
 systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
 systemctl enable calvin-xhost.service
