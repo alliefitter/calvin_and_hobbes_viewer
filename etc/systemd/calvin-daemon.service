@@ -1,5 +1,6 @@
 [Unit]
 Description=Calvin daemon
+After=calvin-xhost.service
 
 [Service]
 Environment="DISPLAY=:0"

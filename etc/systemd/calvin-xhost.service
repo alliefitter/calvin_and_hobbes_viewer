@@ -1,0 +1,14 @@
+[Unit]
+Description=Allow calvin user access to xserver
+
+[Service]
+Type=oneshot
+Environment="DISPLAY=:0"
+User=afitter
+Group=afitter
+ExecStart=/usr/bin/xhost-calvin
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical.target

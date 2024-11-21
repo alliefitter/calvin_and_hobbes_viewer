@@ -1,29 +1,49 @@
 #!/usr/bin/env bash
 
-export POETRY=/root/.local/bin/poetry
+
+if [ -z ${SHARE_PATH+x} ]; then
+  export SHARE_PATH=/usr/share/calvin/
+fi
+if [ -z ${LIB_PATH+x} ]; then
+  export LIB_PATH=/usr/lib/calvin/
+fi
+
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
-export COMICS_PATH=/usr/share/calvin/comics/
-export SSH_USER=$(</usr/share/calvin/SSH_USER)
+export POETRY=/root/.local/bin/poetry
+export COMICS_PATH=$SHARE_PATH/comics/
+export SSH_USER=$(<$SHARE_PATH/SSH_USER)
+echo "Using ssh user $SSH_USER"
+echo "User lib path $LIB_PATH"
+echo "User share path $SHARE_PATH"
+
 mv /home/$SSH_USER/.ssh/calvin.pub /home/$SSH_USER/.ssh/authorized_keys
 chown -R $SSH_USER:$SSH_USER /home/$SSH_USER/.ssh/
-mkdir /tmp/calvin_and_hobbes
-cd /tmp/calvin_and_hobbes
 dphys-swapfile swapoff
 sed -ie 's/CONF_SWAPSIZE=.*$/CONF_SWAPSIZE=2048/g' /etc/dphys-swapfile
 sudo dphys-swapfile setup
 sudo dphys-swapfile swapon
+
+echo "Checkout lib"
+cd $LIB_PATH
 git clone https://github.com/alliefitter/calvin_and_hobbes_viewer.git
 cd calvin_and_hobbes_viewer
+
+echo "Build calvin"
 curl -sSL https://install.python-poetry.org | python3 -
 $POETRY build
+
+echo "Build hobbes"
 cd hobbes
 npm install
 npm run build
 cd ../
+
+echo "Adding users"
 sudo useradd -r -s /bin/false calvin
 sudo useradd -r -s /bin/false hobbes
-mkdir -p /app/calvin
-mkdir /app/calvin/comics
+
+echo "Deploying"
+mkdir /app/calvin
 mkdir /app/hobbes
 cp dist/*.whl /app/calvin
 cp -r hobbes/dist/* /app/hobbes
@@ -32,24 +52,39 @@ cp etc/nginx/* /etc/nginx/conf.d
 cp etc/systemd/* /etc/systemd/system/
 cp scripts/xhost_calvin.sh /usr/bin/xhost-calvin
 chmod +x /usr/bin/xhost-calvin
+
+echo "Installing calvin"
 cd /app/calvin
 virtualenv venv
 ./venv/bin/pip3 install *.whl
+unzip $SHARE_PATH/comics.zip -d "$COMICS_PATH"
 ./venv/bin/calvin init-db
-unzip /usr/share/calvin/comics.zip -d "$COMICS_PATH"
-rm /usr/share/calvin/comics.zip
+rm $SHARE_PATH/comics.zip
+
+echo "Set up nginx"
 sed -ie 's/user .*$/user hobbes hobbes/g' /etc/nginx/nginx.conf
 rm /etc/nginx/sites-enabled/*
+
 chown -R calvin:calvin /app/calvin
 chown -R hobbes:hobbes /app/hobbes
-cp /tmp/calvin_and_hobbes/calvin_and_hobbes_viewer/scripts/xhost_calvin.sh /usr/bin/xhost_calvin
+echo "Deployment complete"
+
+echo "Setting up systemd "
 systemctl daemon-reload
 systemctl enable calvin-api.service
 systemctl enable calvin-daemon.service
 systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
-systemctl enable calvin-xhost.service
 raspi-config nonint do_boot_behaviour B4
+
+echo "Updating lightdm"
+cat  << EOF
+
+[SeatDefaults]
+user-session=openbox
+autologin-user=$SSH_USER
+autologin-user-timeout=0
+EOF
 (cat | tee -a /etc/lightdm/lightdm.conf  >/dev/null) << EOF
 
 [SeatDefaults]
@@ -57,3 +92,4 @@ user-session=openbox
 autologin-user=$SSH_USER
 autologin-user-timeout=0
 EOF
+cat /etc/lightdm.conf
