@@ -11,4 +11,4 @@ Restart=on-failure
 RestartSec=10
 
 [Install]
-WantedBy=calvin-xhost.target
+WantedBy=graphical.target
