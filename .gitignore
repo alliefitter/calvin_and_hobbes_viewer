@@ -162,3 +162,4 @@ cython_debug/
 .idea/
 calvin/comics/*
 calvin/comics.db
+img/*.img*
