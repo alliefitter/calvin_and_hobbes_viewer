@@ -163,3 +163,4 @@ cython_debug/
 calvin/comics/*
 calvin/comics.db
 img/*.img*
+img/wifi.nmconnection

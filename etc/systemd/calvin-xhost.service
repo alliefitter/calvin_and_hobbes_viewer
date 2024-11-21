@@ -6,7 +6,7 @@ Type=oneshot
 Environment="DISPLAY=:0"
 User=afitter
 Group=afitter
-ExecStart=/home/afitter/projects/calvin_and_hobbes_viewer/scripts/xhost_calvin.sh
+ExecStart=/usr/bin/xhost_calvin
 Restart=on-failure
 RestartSec=10
 

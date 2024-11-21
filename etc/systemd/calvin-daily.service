@@ -2,7 +2,7 @@
 Description=Display next daily comic
 
 [Service]
-Environment="COMICS_PATH=/app/calvin/comics"
+Environment="COMICS_PATH=/usr/share/calvin/comics"
 User=calvin
 Group=calvin
 ExecStart=/app/calvin/venv/bin/calvin next-daily-comic

@@ -1,11 +1,15 @@
 [Unit]
 Description=Calvin daemon
+After=calvin-xhost.service
 
 [Service]
 Environment="DISPLAY=:0"
-Environment="COMICS_PATH=/app/calvin/comics"
+Environment="COMICS_PATH=/usr/share/calvin/comics"
 User=calvin
 Group=calvin
 ExecStart=/app/calvin/venv/bin/calvin run-daemon
 Restart=on-failure
 RestartSec=10
+
+[Install]
+WantedBy=graphical.target
