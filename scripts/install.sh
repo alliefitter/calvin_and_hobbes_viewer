@@ -11,7 +11,8 @@ sed -ie 's/CONF_SWAPSIZE=.*$/CONF_SWAPSIZE=2048/g' /etc/dphys-swapfile
 sudo dphys-swapfile setup
 sudo dphys-swapfile swapon
 apt update
-apt install nodejs npm nginx libjpeg-dev zlib1g-dev -y
+apt install nodejs npm nginx libjpeg-dev zlib1g-dev python3-virtualenv lightdm openbox -y
+raspi-config nonint do_boot_behaviour B4
 curl -sSL https://install.python-poetry.org | python3 -
 $POETRY build
 cd hobbes
