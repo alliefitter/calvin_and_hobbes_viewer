@@ -16,7 +16,7 @@ echo "Using ssh user $SSH_USER"
 echo "User lib path $LIB_PATH"
 echo "User share path $SHARE_PATH"
 
-mv /home/$SSH_USER/.ssh/calvin.pub /home/$SSH_USER/.ssh/authorized_keys
+mv /home/$SSH_USER/.ssh/calvinpi.pub /home/$SSH_USER/.ssh/authorized_keys
 chown -R $SSH_USER:$SSH_USER /home/$SSH_USER/.ssh/
 dphys-swapfile swapoff
 sed -ie 's/CONF_SWAPSIZE=.*$/CONF_SWAPSIZE=2048/g' /etc/dphys-swapfile
@@ -43,7 +43,7 @@ sudo useradd -r -s /bin/false calvin
 sudo useradd -r -s /bin/false hobbes
 
 echo "Deploying"
-mkdir /app/calvin
+mkdir -p /app/calvin
 mkdir /app/hobbes
 cp dist/*.whl /app/calvin
 cp -r hobbes/dist/* /app/hobbes
@@ -75,21 +75,8 @@ systemctl enable calvin-api.service
 systemctl enable calvin-daemon.service
 systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
+systemctl enable calvin-xhost.service
 raspi-config nonint do_boot_behaviour B4
 
 echo "Updating lightdm"
-cat  << EOF
-
-[SeatDefaults]
-user-session=openbox
-autologin-user=$SSH_USER
-autologin-user-timeout=0
-EOF
-(cat | tee -a /etc/lightdm/lightdm.conf  >/dev/null) << EOF
-
-[SeatDefaults]
-user-session=openbox
-autologin-user=$SSH_USER
-autologin-user-timeout=0
-EOF
-cat /etc/lightdm.conf
+/usr/lib/lightdm/lightdm-set-defaults --autologin "$SSH_USER"
