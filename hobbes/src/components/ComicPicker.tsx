@@ -23,10 +23,7 @@ function ComicCalendar({ startDate, endDate, validDates }: ComicCalendarProps) {
     !validDates.filter((d) => d.isSame(date));
 
   const setComic = async (comicDate: Dayjs) => {
-    if (
-      selectedDate.year() !== comicDate.year() ||
-      selectedDate.month() !== comicDate.month()
-    ) {
+    if (selectedDate.year() !== comicDate.year()) {
       setSelectedDate(comicDate);
       return;
     }

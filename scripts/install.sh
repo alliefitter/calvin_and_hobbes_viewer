@@ -65,7 +65,7 @@ unzip $SHARE_PATH/comics.zip -d "$COMICS_PATH"
 rm $SHARE_PATH/comics.zip
 
 echo "Set up nginx"
-sed -ie 's/user .*$/user hobbes hobbes/g' /etc/nginx/nginx.conf
+sed -ie 's/user .*$/user hobbes hobbes;/g' /etc/nginx/nginx.conf
 rm /etc/nginx/sites-enabled/*
 
 chown -R calvin:calvin /app/calvin
