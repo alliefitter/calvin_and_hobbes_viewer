@@ -24,6 +24,7 @@ sudo dphys-swapfile setup
 sudo dphys-swapfile swapon
 
 echo "Checkout lib"
+mkdir -p $LIB_PATH
 cd $LIB_PATH
 git clone https://github.com/alliefitter/calvin_and_hobbes_viewer.git
 cd calvin_and_hobbes_viewer
@@ -49,6 +50,7 @@ mkdir /etc/lightdm/lightdm.conf.d/
 cp dist/*.whl /app/calvin
 cp -r hobbes/dist/* /app/hobbes
 cp etc/.xsession /home/$SSH_USER/
+cp etc/.xsession /home/$SSH_USER/.xinitrc
 cp etc/nginx/* /etc/nginx/conf.d
 cp etc/systemd/* /etc/systemd/system/
 cp etc/lightdm/10-autologin.conf /etc/lightdm/lightdm.conf.d/
@@ -62,7 +64,7 @@ virtualenv venv
 ./venv/bin/pip3 install *.whl
 unzip $SHARE_PATH/comics.zip -d "$COMICS_PATH"
 ./venv/bin/calvin init-db
-rm $SHARE_PATH/comics.zip
+rm "${SHARE_PATH}comics.zip"
 
 echo "Set up nginx"
 sed -ie 's/user .*$/user hobbes hobbes;/g' /etc/nginx/nginx.conf
@@ -80,6 +82,3 @@ systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
 systemctl enable calvin-xhost.service
 raspi-config nonint do_boot_behaviour B4
-
-echo "Updating lightdm"
-/usr/lib/lightdm/lightdm-set-defaults --autologin "$SSH_USER"
