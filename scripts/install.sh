@@ -52,6 +52,7 @@ cp etc/.xsession /home/$SSH_USER/
 cp etc/nginx/* /etc/nginx/conf.d
 cp etc/systemd/* /etc/systemd/system/
 cp etc/lightdm/10-autologin.conf /etc/lightdm/lightdm.conf.d/
+sed -ie "s/SSH_USER/$SSH_USER/g" /etc/lightdm/lightdm.conf.d/10-autologin.conf
 cp scripts/xhost_calvin.sh /usr/bin/xhost-calvin
 chmod +x /usr/bin/xhost-calvin
 
