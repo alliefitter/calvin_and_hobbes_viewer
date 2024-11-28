@@ -45,11 +45,13 @@ sudo useradd -r -s /bin/false hobbes
 echo "Deploying"
 mkdir -p /app/calvin
 mkdir /app/hobbes
+mkdir /etc/lightdm/lightdm.conf.d/
 cp dist/*.whl /app/calvin
 cp -r hobbes/dist/* /app/hobbes
 cp etc/.xsession /home/$SSH_USER/
 cp etc/nginx/* /etc/nginx/conf.d
 cp etc/systemd/* /etc/systemd/system/
+cp etc/lightdm/10-autologin.conf /etc/lightdm/lightdm.conf.d/
 cp scripts/xhost_calvin.sh /usr/bin/xhost-calvin
 chmod +x /usr/bin/xhost-calvin
 
