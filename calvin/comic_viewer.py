@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
 from importlib.resources import files
-from pathlib import Path
 from tkinter import Label, Tk
 
 from PIL import ImageTk
