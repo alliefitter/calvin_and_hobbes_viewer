@@ -9,7 +9,6 @@ from PIL.ImageTk import PhotoImage
 
 from calvin.db import DB
 from calvin.util import get_comics_path
-from calvin.white_noise_label import WhiteNoiseLabel
 
 DATA = files("calvin.data")
 
