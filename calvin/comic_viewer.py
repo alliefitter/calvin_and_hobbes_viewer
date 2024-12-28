@@ -32,7 +32,7 @@ class ComicViewer:
         self._set_next_image(comic)
 
     def next_daily_comic(self):
-        frames = [PhotoImage(file=str(DATA.joinpath('white_noise.gif')), format=f'gif -index {i}') for i in range(6)]
+        frames = [PhotoImage(file=str(DATA.joinpath(f'frame_{i}_delay-0.05s.gif'))) for i in range(6)]
         self.panel.pack_forget()
         self.panel = Label(self.root, bg="#949494")
         self.panel.pack(side="bottom", fill="both", expand="yes")
@@ -41,7 +41,7 @@ class ComicViewer:
             self.panel.image = frame
             self.panel.pack(side="bottom", fill="both", expand="yes")
             self.root.update()
-            sleep(.1)
+            sleep(.05)
 
         comic = self.db.get_next_daily_comic()
         self._set_next_image(comic)
