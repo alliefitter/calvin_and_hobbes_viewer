@@ -38,6 +38,7 @@ class ComicViewer:
         self.panel.pack(side="bottom", fill="both", expand="yes")
         for frame in frames * 5:
             self.panel.configure(image=frame)
+            self.panel.image = frame
             self.panel.pack(side="bottom", fill="both", expand="yes")
             self.root.update()
             sleep(.1)
