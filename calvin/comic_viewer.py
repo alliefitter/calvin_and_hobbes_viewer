@@ -36,7 +36,7 @@ class ComicViewer:
         self.panel.pack_forget()
         self.panel = Label(self.root, bg="#949494")
         self.panel.pack(side="bottom", fill="both", expand="yes")
-        for frame in frames * 5:
+        for frame in frames * 10:
             self.panel.configure(image=frame)
             self.panel.image = frame
             self.panel.pack(side="bottom", fill="both", expand="yes")
