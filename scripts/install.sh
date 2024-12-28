@@ -49,12 +49,10 @@ mkdir /app/hobbes
 mkdir /etc/lightdm/lightdm.conf.d/
 cp dist/*.whl /app/calvin
 cp -r hobbes/dist/* /app/hobbes
-cp etc/.xsession /home/$SSH_USER/
-cp etc/.xsession /home/$SSH_USER/.xinitrc
 cp etc/nginx/* /etc/nginx/conf.d
 cp etc/systemd/* /etc/systemd/system/
-cp etc/lightdm/10-autologin.conf /etc/lightdm/lightdm.conf.d/
-sed -ie "s/SSH_USER/$SSH_USER/g" /etc/lightdm/lightdm.conf.d/10-autologin.conf
+cp etc/lightdm/10-calvin.conf /etc/lightdm/lightdm.conf.d/
+sed -ie "s/SSH_USER/$SSH_USER/g" /etc/lightdm/lightdm.conf.d/10-calvin.conf
 cp scripts/xhost_calvin.sh /usr/bin/xhost-calvin
 chmod +x /usr/bin/xhost-calvin
 
@@ -70,6 +68,7 @@ echo "Set up nginx"
 sed -ie 's/user .*$/user hobbes hobbes;/g' /etc/nginx/nginx.conf
 rm /etc/nginx/sites-enabled/*
 
+echo "Changing app ownership"
 chown -R calvin:calvin /app/calvin
 chown -R hobbes:hobbes /app/hobbes
 echo "Deployment complete"
@@ -82,3 +81,4 @@ systemctl enable calvin-daily.service
 systemctl enable calvin-daily.timer
 systemctl enable calvin-xhost.service
 raspi-config nonint do_boot_behaviour B4
+echo "Installation complete!"
