@@ -1,10 +1,11 @@
 from datetime import datetime
 from importlib.resources import files
-from time import sleep
+from time import sleep, time
 from tkinter import Label, Tk
 
 from PIL import ImageTk
 from PIL.Image import open, Image
+from PIL.ImageTk import PhotoImage
 
 from calvin.db import DB
 from calvin.util import get_comics_path
@@ -32,9 +33,20 @@ class ComicViewer:
         self._set_next_image(comic)
 
     def next_daily_comic(self):
-        self.panel.pack_forget()
-        self.panel = WhiteNoiseLabel()
-        self.panel.pack(side="bottom", fill="both", expand="yes")
+        start_time = time()
+        frames = [PhotoImage(file=str(DATA.joinpath('white_noise.gif')), format=f'gif -index {i}') for i in range(6)]
+
+        def update(ind):
+            frame = frames[ind]
+            ind += 1
+            if ind == 6:
+                ind = 0
+            label.configure(image=frame)
+            self.root.after(100, update, ind)
+
+        label = Label(self.root)
+        label.pack()
+        self.root.after(0, update, 0)
         self.root.update()
         sleep(5)
         comic = self.db.get_next_daily_comic()
