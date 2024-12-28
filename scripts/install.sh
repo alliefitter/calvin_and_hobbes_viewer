@@ -60,7 +60,7 @@ echo "Installing calvin"
 cd /app/calvin
 virtualenv venv
 ./venv/bin/pip3 install *.whl
-unzip $SHARE_PATH/comics.zip -d "$COMICS_PATH"
+unzip ${SHARE_PATH}comics.zip -d "$COMICS_PATH"
 ./venv/bin/calvin init-db
 rm "${SHARE_PATH}comics.zip"
 
