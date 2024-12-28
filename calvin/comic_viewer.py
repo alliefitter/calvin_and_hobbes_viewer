@@ -33,10 +33,11 @@ class ComicViewer:
 
     def next_daily_comic(self):
         frames = [PhotoImage(file=str(DATA.joinpath('white_noise.gif')), format=f'gif -index {i}') for i in range(6)]
+        self.panel.pack_forget()
+        self.panel = Label(self.root, bg="#949494")
+        self.panel.pack(side="bottom", fill="both", expand="yes")
         for frame in frames * 5:
-            self.panel.pack_forget()
-            self.panel = Label(self.root, image=frame, bg="#949494")
-            self.panel.pack(side="bottom", fill="both", expand="yes")
+            self.panel.configure(image=frame)
             self.root.update()
             sleep(.1)
 
