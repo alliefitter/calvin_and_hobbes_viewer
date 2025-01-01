@@ -7,7 +7,7 @@ import { h } from "preact";
 
 export function NextButton() {
   const nextComic = async () => {
-    await fetch("http://localhost:8000/api/comics/next", {
+    await fetch("http://calvinpi.local:8000/api/comics/next", {
       method: "POST",
     });
   };
@@ -20,7 +20,7 @@ export function NextButton() {
 
 export function BackButton() {
   const previousComic = async () => {
-    await fetch("http://localhost:8000/api/comics/previous", {
+    await fetch("http://calvinpi.local:8000/api/comics/previous", {
       method: "POST",
     });
   };
@@ -33,7 +33,7 @@ export function BackButton() {
 
 export function TodayButton() {
   const todaysComic = async () => {
-    await fetch("http://localhost:8000/api/comics/today", {
+    await fetch("http://calvinpi.local:8000/api/comics/today", {
       method: "POST",
     });
   };
