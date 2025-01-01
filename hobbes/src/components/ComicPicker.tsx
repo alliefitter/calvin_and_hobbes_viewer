@@ -29,7 +29,7 @@ function ComicCalendar({ startDate, endDate, validDates }: ComicCalendarProps) {
     }
     setSelectedDate(comicDate);
     await fetch(
-      `http://calvinpi.home:8000/api/comics/${comicDate.format("YYYY-MM-DD")}`,
+      `http://localhost:8000/api/comics/${comicDate.format("YYYY-MM-DD")}`,
       { method: "POST" },
     );
   };
@@ -53,7 +53,7 @@ export function ComicPicker() {
   const [dates, setDates] = useState<Dayjs[]>([]);
   useEffect(() => {
     const listComics = async () => {
-      const response = await fetch("http://calvinpi.home:8000/api/comics");
+      const response = await fetch("http://localhost:8000/api/comics");
       const rawList: string[] = await response.json();
       setStartDate(makeDate(rawList[0]));
       setEndDate(makeDate(rawList[rawList.length - 1]));

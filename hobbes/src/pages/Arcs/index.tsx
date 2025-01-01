@@ -10,7 +10,7 @@ export function Arcs() {
   const [screenWidth, setScreenWidth] = useState<number>(0);
   useEffect(() => {
     const listArcs = async () => {
-      const response = await fetch("http://calvinpi.home:8000/api/comics/arcs");
+      const response = await fetch("http://localhost:8000/api/comics/arcs");
       setArcs(await response.json());
     };
     setScreenWidth(window.innerWidth);
@@ -21,7 +21,7 @@ export function Arcs() {
     <div>
       {arcs.map((arc) => {
         const setArc = async () => {
-          await fetch(`http://calvinpi.home:8000/api/comics/arcs/${arc.name}`, {
+          await fetch(`http://localhost:8000/api/comics/arcs/${arc.name}`, {
             method: "POST",
           });
         };
@@ -35,7 +35,7 @@ export function Arcs() {
             <h1>{title}</h1>
             <img
               style={{ width: screenWidth - 200 }}
-              src={`http://calvinpi.home:8000/api/comics/image/${arc.date}`}
+              src={`http://localhost:8000/api/comics/image/${arc.date}`}
               loading="lazy"
             />
           </a>
