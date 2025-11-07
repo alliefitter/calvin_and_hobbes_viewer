@@ -4,12 +4,13 @@ from time import sleep, time
 from tkinter import Label, Tk
 
 from PIL import ImageTk
-from PIL.Image import open, Image
+from PIL.Image import open, Image, ImageFile
 from PIL.ImageTk import PhotoImage
 
 from calvin.db import DB
 from calvin.util import get_comics_path
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 DATA = files("calvin.data")
 
 

@@ -160,7 +160,7 @@ class DB:
 
     def reset_daily(self):
         cursor = self.connection
-        cursor.execute("update position set position = 0 where cursor_name = 'daily'")
+        cursor.execute("update position set position = 1 where cursor_name = 'daily'")
         cursor.commit()
         self.connection.close()
 
